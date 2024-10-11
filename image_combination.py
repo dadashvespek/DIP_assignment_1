@@ -34,9 +34,9 @@ def save_image(image, filename):
     tif.write_image(image)
     tif.close()
 
-red_file = 'Region_001_FOV_00041_Acridine_Or_Gray.tif'
-green_file = 'Region_001_FOV_00041_FITC_Gray.tif'
-blue_file = 'Region_001_FOV_00041_DAPI_Gray.tif'
+red_file = 'imageset1/Region_001_FOV_00041_Acridine_Or_Gray.tif'
+green_file = 'imageset1/Region_001_FOV_00041_FITC_Gray.tif'
+blue_file = 'imageset1/Region_001_FOV_00041_DAPI_Gray.tif'
 
 combined_image = combine_fluorescence_images(red_file, green_file, blue_file)
 
