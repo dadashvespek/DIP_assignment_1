@@ -127,7 +127,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"An error occurred while processing {image_file}: {e}")
     #part 2
-    svs_file = 'Kidney2_RGB2_20x.svs'
+    svs_file = 'imageset1/Kidney2_RGB2_20x.svs'
     try:
         load_svs_subimages(svs_file)
     except Exception as e:
