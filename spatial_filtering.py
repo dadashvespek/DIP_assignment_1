@@ -97,6 +97,58 @@ def sobel_gradient(image):
 
     return gradient_magnitude
 
+def partial_derivative_x(image):
+    kernel = np.array([[-1, 0, 1]])
+    padded_image = np.pad(image, ((0, 0), (1, 1)), mode='edge')
+    derivative = np.zeros_like(image)
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            derivative[i, j] = np.sum(padded_image[i, j:j+3] * kernel)
+    return derivative
+
+def partial_derivative_y(image):
+    kernel = np.array([[-1], [0], [1]])
+    padded_image = np.pad(image, ((1, 1), (0, 0)), mode='edge')
+    derivative = np.zeros_like(image)
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            derivative[i, j] = np.sum(padded_image[i:i+3, j] * kernel)
+    return derivative
+
+def second_partial_derivative_x(image):
+    kernel = np.array([[1, -2, 1]])
+    padded_image = np.pad(image, ((0, 0), (1, 1)), mode='edge')
+    derivative = np.zeros_like(image)
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            derivative[i, j] = np.sum(padded_image[i, j:j+3] * kernel)
+    return derivative
+
+def second_partial_derivative_y(image):
+    kernel = np.array([[1], [-2], [1]])
+    padded_image = np.pad(image, ((1, 1), (0, 0)), mode='edge')
+    derivative = np.zeros_like(image)
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            derivative[i, j] = np.sum(padded_image[i:i+3, j] * kernel)
+    return derivative
+
+def power_law_transform(image, gamma=1.0):
+    return np.power(image, gamma)
+
+def multistep_processing(file_path):
+    original, _ = process_image(file_path, lambda img: img)
+    _, laplacian = process_image(file_path, laplacian_filter)
+    _, sharpened = process_image(file_path, lambda img: laplacian_sharpening(img, amount=1))
+    _, sobel = process_image(file_path, sobel_gradient)
+    _, smoothed_sobel = process_image(file_path, lambda img: blur_image_gaussian(sobel_gradient(img), kernel_size=5, sigma=0))
+    mask = sharpened * smoothed_sobel
+    sharpened_masked = original + mask
+    final_result = power_law_transform(sharpened_masked, gamma=0.5)  
+    
+    return original, laplacian, sharpened, sobel, smoothed_sobel, mask, sharpened_masked, final_result
+
+
 def main():
     image_folder = 'imageset3'
     image_files = [
@@ -182,6 +234,62 @@ def main():
 
     plt.tight_layout()
     plt.show()
+    file_path = os.path.join(image_folder, image_files[0])
+    original, _ = process_image(file_path, lambda img: img) 
+    _, dx = process_image(file_path, partial_derivative_x)
+    _, dy = process_image(file_path, partial_derivative_y)
+    _, dxx = process_image(file_path, second_partial_derivative_x)
+    _, dyy = process_image(file_path, second_partial_derivative_y)
+
+
+    plt.figure(figsize=(20, 4))
+    
+    plt.subplot(151)
+    plt.imshow(original, cmap='gray')
+    plt.title('Original Image')
+    plt.axis('off')
+
+    plt.subplot(152)
+    plt.imshow(dx, cmap='gray')
+    plt.title('∂/∂x')
+    plt.axis('off')
+
+    plt.subplot(153)
+    plt.imshow(dy, cmap='gray')
+    plt.title('∂/∂y')
+    plt.axis('off')
+
+    plt.subplot(154)
+    plt.imshow(dxx, cmap='gray')
+    plt.title('∂²/∂x²')
+    plt.axis('off')
+
+    plt.subplot(155)
+    plt.imshow(dyy, cmap='gray')
+    plt.title('∂²/∂y²')
+    plt.axis('off')
+
+    plt.tight_layout()
+    plt.show()
+
+
+    file_path = os.path.join(image_folder, 'Fig0343(a)(skeleton_orig).tif')
+    
+    results = multistep_processing(file_path)
+    
+    titles = ['Original', 'Laplacian', 'Sharpened', 'Sobel', 'Smoothed Sobel', 
+              'Mask', 'Sharpened with Mask', 'Final Result']
+    
+    plt.figure(figsize=(20, 10))
+    for i, (img, title) in enumerate(zip(results, titles)):
+        plt.subplot(2, 4, i+1)
+        plt.imshow(img, cmap='gray')
+        plt.title(title)
+        plt.axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+
 
 if __name__ == "__main__":
     main()
