@@ -1,1 +1,3 @@
 numpy<2.0
+pylibtiff==0.6.1
+matplotlib==3.9.2
